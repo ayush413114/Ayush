@@ -1,0 +1,120 @@
+Business -Trip database
+Consider the business trip database that keeps track of the business trips of salesman in in office. Following are the tables:
+
+salesman (sno integer, s_name char (30), start_year year, deptno varchar (10))
+trip (tno integer, from_city char (20), to_city char (20), departure_date date, return date)
+dept (deptno varchar (10), dept_name char(20))
+expense (eid integer, amount float)
+
+The relationship is as follows
+dept-salesman 1 to m 
+salesman - trip 1 to m 
+Trip - Expense 1 to 1
+-----------------------------------------------------------------------------------create database Business_Trip;
+\c Business_Trip;
+-----------------------------------------------------------------------------------
+create table dept 
+(
+	dept_no varchar(10) primary key, 
+	dept_name char(20)
+);
+
+insert into dept(dept_no,dept_name)values
+('c1','Electronics'),
+('c2','Computer'),
+('c3','Statistics'),
+('c4','Mathematics'),
+('c5','English');
+
+create table salesman 
+(
+	s_no integer primary key,
+	s_name char(30),
+	start_year integer,
+	dept_no varchar (10),
+                  constraint fk_key foreign key(dept_no) references dept
+);
+insert into salesman(s_no,s_name,start_year,dept_no)values
+(101,'Mr.Patil',2001,'c1'),
+(102,'Mr.Sharma',2003,'c2'),
+(103,'Mr.Rathod',2005,'c2'),
+(104,'Mr.Malhotra',2007,'c3'),
+(105,'Mr.Kulkarni',2010,'c4'),
+(106,'Mr.Shah',2014,'c5'),
+(107,'Mr.Das',2010,'c3'),
+(108,'Mr.Chawan',2009,'c1');
+
+create table trip 
+(
+	tno integer primary key, 
+	from_city char (20), 
+	to_city char (20), 
+	departure_date date, 
+	return_date date,
+	s_no int, 
+                  constraint fk_key foreign key(s_no) references salesman
+);
+
+insert into trip(tno,from_city,to_city,departure_date,return_date,s_no)values
+(111,'Pune','Calcutta','2014-11-18','2014-11-25',101),
+(112,'Mumbai','Calcutta','2012-08-01','2012-08-10',108),
+(114,'Banglore','Mumbai','2009-11-03','2009-11-15',104),
+(115,'Pune','Delhi','2011-03-26','2011-03-30',106),
+(116,'Chennai','Mysore','2010-06-04','2010-06-15',101),
+(117,'Agra','Mumbai','2008-08-15','2008-08-20',107);
+
+create table expense
+(
+	e_id integer primary key, 
+	amount money,
+	tno integer references trip
+);
+insert into expense(e_id,amount,tno)values
+(1,'$21,000.00',111),
+(2,'$23,000.00',112),
+(4,'$10,000.00',114),
+(5,'$25,000.00',115),
+(6,'$15,000.00',116),
+(7,'$7,000.00',117);
+
+select * from dept;
+select * from trip;
+select * from salesman;
+select * from expense;
+
+
+-----------------------------------------------------------------------------------
+1. Create a view to list the details of all salesman from ‘ Western ‘ department.
+
+	create view v5 as
+	select s_no,s_name,start_year 
+	from salesman,dept 
+	where salesman.dept_no=dept.dept_no and 
+	dept_name='Electronics';
+-----------------------------------------------------------------------------------
+2. Create a view to list all  salesman’s name his trip details and his expenses for the trip. 
+
+	create or replace view v6 as
+	select salesman.s_name,trip.tno,expense.amount,salesman.s_no,trip.to_city
+	from salesman,expense,trip 
+	where salesman.s_no=trip.s_no and 
+	expense.tno=trip.tno;
+-----------------------------------------------------------------------------------
+3. Write the following Queries, on the above created views :   
+a. List the details of salesmen from ‘Western’ department, whose start year is 2005.  
+
+	select * from v5 where start_year=2001;
+
+b. List the names of salesmen from ‘Western’ department, for whom their total trip expense is > Rs 100000.  
+	
+	select v5.s_name 
+	from v5,v6 
+	where v5.s_no=v6.s_no and 
+	amount>'$10000';
+
+c. List the names of salesmen who have gone on a trip to “Mumbai” city.
+
+	select s_name,to_city
+	from v6
+	where to_city='Mumbai';
+--------------

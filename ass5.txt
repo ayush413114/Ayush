@@ -1,0 +1,140 @@
+Set A
+
+1.Bank database
+Consider the following database maintained by a Bank. The Bank maintains information about its branches, customers and their loan applications. Following are the tables:
+
+BRANCH (BID INTEGER, BRNAME VARCHAR (30), BRCITY CHAR (10)),
+
+CUSTOMER (CNO INTEGER, CNAME VARCHAR (20), CADDR VARCHAR (35), CITY VARCHAR(20)),
+
+LOAN_APPLICATION (LNO INTEGER, L_AMT_REQUIRED float, L_AMT_APPROVED float, L_DATE DATE)
+
+The relationship is as follows:
+BRANCH, CUSTOMER, LOAN_APPLICATION are related with ternary relationship.
+
+TERNARY (BID INTEGER, CNO INTEGER, LNO INTEGER). 
+-------------------------------------------------------------------------------------------------------------------------------------
+create database bankdb;
+\c bankdb;
+
+create table branch
+(
+	bid int primary key,
+	bname varchar(30),
+	bcity varchar(30)
+);
+insert into branch values(1001,'Aundh','Pune');
+insert into branch values(1002,'Deccan','Pune');
+insert into branch values(1003,'Peder Rd','Mumbai');
+insert into branch values(1004,'Colaba','Mumbai');
+insert into branch values(1005,'MG Rd','Pune');
+insert into branch values(1007,'Laxmi Rd','Pune');
+insert into branch values(1006,'Bibewadi','Pune');
+insert into branch values(1009,'Deccan','Pune');
+
+insert into
+
+create table customer
+(
+	cno int primary key,
+	cname varchar(30),
+	caddr varchar(30),
+	ccity varchar(20)
+);
+insert into customer values(101,'Akshay','Aundh','Pune');
+insert into customer values(102,'Patil','Sadhashiv Peth','Pune');
+insert into customer values(103,'Joshi','Colaba','Mumbai');
+insert into customer values(104,'Pandey','Colaba','Mumbai');
+insert into customer values(105,'Deshpande','Deccan','Pune');
+insert into customer values(106,'Dave','Karve Nagar','Pune');
+insert into customer values(107,'Sharma','MG Rd','Pune');
+insert into customer values(108,'Gambhir','MG Rd','Pune');
+insert into customer values(109,'Kumar','MG Rd','Pune');
+insert into customer values(110,'Rohan','MG Rd','Pune');
+
+
+create table la
+(
+	lano int primary key,
+	reqmoney text,
+	appmoney text,
+	ladate date
+);
+insert into la values(2001,'10lakh','8lakh','2013-09-09');
+insert into la values(2002,'15lakh','15lakh','2012-09-09');
+insert into la values(2003,'5lakh','4lakh','2013-08-19');
+insert into la values(2004,'2lakh','2lakh','2013-09-29');
+insert into la values(2005,'1lakh','1lakh','2013-02-28');
+insert into la values(2006,'7lakh','6lakh','2013-09-28');
+insert into la values(2007,'6lakh','6lakh','2013-09-21');
+insert into la values(2008,'4lakh','3lakh','2014-02-21');
+insert into la values(2009,'5lakh','3lakh','2014-03-21');
+insert into la values(2010,'10lakh','8lakh','2014-07-11');
+
+create table BCL
+(
+	bid integer references branch,
+	cno integer references customer,
+	lano integer references la
+);
+insert into BCL values(1001,101,2001);
+insert into BCL values(1002,102,2002);
+insert into BCL values(1003,103,2003);
+insert into BCL values(1004,104,2004);
+insert into BCL values(1005,107,2005);
+insert into BCL values(1005,108,2006);
+insert into BCL values(1005,109,2007);
+insert into BCL values(1005,110,2008);
+insert into BCL values(1006,105,2009);
+insert into BCL values(1007,106,2010);
+insert into BCL values(1009,102,2010);
+-------------------------------------------------------------------------------------------------------------------------------------
+select * from branch;
+select * from customer;
+select * from la;
+select * from BCL;
+-------------------------------------------------------------------------------------------------------------------------------------
+Solve the following Functions
+
+SET A
+1. Write a function that returns the total number of customers of a particular branch.
+( Accept branch name as input parameter.)
+
+create or replace function tcust(nm char(30))returns int as'
+declare cnt int;
+begin
+	select count(cno) into cnt from BCL 
+	where bid in(select bid from Branch where bname=nm);
+	return cnt;
+end;
+'language 'plpgsql';
+
+// for execution
+select tcust('Deccan');
+select tcust('Aundh');
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+2. Write a function to find the maximum loan amount approved.
+
+create or replace function maximum()returns money as '
+declare lmax money;
+begin
+	select max(appmoney) into lmax from la;
+	return lmax;
+end; 
+'language 'plpgsql';
+
+select maximum();
+
+select max(appmoney) as lmax from la;
+-------------------------------------------------------------------------------------------------------------------------------------
+create or replace function maximum()returns text as '
+declare lmax text;
+begin
+	select max(appmoney) into lmax from la;
+	return lmax;
+end; 
+'language 'plpgsql';
+
+select maximum();

@@ -1,0 +1,22 @@
+CREATE OR REPLACE FUNCTION t2()
+RETURNS TRIGGER AS $$
+
+BEGIN
+   
+ -- Check if the loan amount is greater than 200,000
+    
+IF NEW.loan_amount > 200000 THEN
+        
+-- Insert the customer details into the CustomerLoans table
+       
+INSERT INTO CustomerLoans (customer_id, customer_name, loan_amount, application_date, status)
+        
+VALUES (NEW.customer_id, NEW.customer_name, NEW.loan_amount, NEW.application_date, NEW.status);
+   
+ END IF;
+    
+RETURN NEW;
+
+END;
+
+$$ LANGUAGE plpgsql;

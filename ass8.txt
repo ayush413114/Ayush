@@ -1,0 +1,79 @@
+Student (rollno integer,name varchar(30),address varchar(50),class varchar(10))
+Subject(Scode varchar(10),subject name varchar(20))
+student and subject are related with M-M relationship with attributes marks scored. 
+Create a RDB in 3NF for the above and solve the following.
+-------------------------------------------------------------------------------------------------------------------------
+create table student
+(
+	rollno integer primary key,
+	name varchar(30),
+	address varchar(50),
+	class varchar(10)
+);
+
+insert into student(rollno,name,address,class)values
+(101,'ABC','Sadhashiv Peth','Fy'),
+(102,'DEF','Sadhashiv Peth','Fy'),
+(103,'GHI','Sadhashiv Peth','Fy'),
+(104,'JKL','Nana Peth','Sy'),
+(105,'MNO','Nana Peth','Sy');
+
+create table Subject
+(
+	Scode varchar(10) primary key,
+	s_name varchar(20)
+);
+
+insert into subject(scode,s_name)values(1,'Science'),
+(2,'Comp.Science'),
+(3,'Electronics');
+
+
+create table ss 
+(
+	rollno integer references Student, 
+	scode varchar(10) references Subject,
+	marks int
+);
+
+insert into ss(rollno,scode,marks)values(101,1,80),
+(102,1,85),
+(103,1,81),
+(104,2,76),
+(105,3,71),
+(104,1,69),
+(105,1,79),
+(101,2,79),
+(101,3,89),
+(102,2,71),
+(102,3,72),
+(103,2,76),
+(103,3,64),
+(104,3,69),
+(105,2,89);
+
+select * from student;
+select * from subject;
+select * from ss;
+-------------------------------------------------------------------------------------------------------------------------------------
+Q1) Write a stored function using cursors, to accept a address from the user and display the name, subject and the marks of the students staying at that address.
+
+create function c1(addrs varchar(20))returns void as '
+declare c11 cursor for select name,subject,marks from student,subject,ss where student.rollno=ss.rollno and subject.scode=ss.scode and address=addrs;
+n varchar(20);
+s varchar(20);
+m int;
+begin
+	open c11;
+		loop
+			fetch c11 into n,s,m;
+			exit when not found;
+			raise notice''Name:%'',n;
+			raise notice''Subject Name:%'',s;
+			raise notice''Marks:%'',m;
+		end loop;
+	close c11;
+end '
+language 'plpgsql';
+
+select c1('Sadhashib Peth');

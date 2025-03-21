@@ -1,0 +1,123 @@
+﻿Business -Trip database
+
+Consider the business trip database that keeps track of the business trips of salesman in in office. 
+Following are the tables:
+
+salesman (sno integer, s_name char (30), start_year year, deptno varchar (10))
+trip (tno integer, from_city char (20), to_city char (20), departure_date date, return date)
+dept (deptno varchar (10), dept_name char(20))
+expense (eid integer, amount float)
+
+The relationship is as follows:
+dept-salesman 1 to m 
+salesman - trip 1 to m 
+Trip - Expense 1 to 1
+-------------------------------------------------------------------------------------------------------------------------------------
+create database business_trip;
+\c business_trip;
+-------------------------------------------------------------------------------------------------------------------------------------
+create table dept 
+(
+	dept_no varchar (10) primary key, 
+	dept_name varchar(20)
+);
+
+insert into dept(dept_no,dept_name)values
+('c1','Electronics'),
+('c2','Computer'),
+('c3','Statistics'),
+('c4','Mathematics'),
+('c5','English');
+
+create table salesman 
+(
+	s_no integer primary key, 
+	s_name varchar (30), 
+	start_year int, 
+	dept_no varchar (10) references dept
+);
+insert into salesman (s_no,s_name,start_year,dept_no)values
+(101,'Mr.Patil',2001,'c1'),
+(102,'Mr.Sharma',2003,'c2'),
+(103,'Mr.Rathod',2005,'c2'),
+(104,'Mr.Malhotra',2007,'c3'),
+(105,'Mr.Kulkarni',2010,'c4'),
+(106,'Mr.Shah',2014,'c5'),
+(107,'Mr.Das',2010,'c3'),
+(108,'Mr.Chawan',2009,'c1');
+
+create table trip 
+(
+	tno integer primary key, 
+	from_city varchar (20), 
+	to_city varchar (20), 
+	departure_date date, 
+	return_date date,
+	s_no integer references salesman 
+);
+
+insert into trip(tno,from_city,to_city,departure_date,return_date,s_no)values
+(111,'Pune','Calcutta','2014-11-18','2014-11-25',101),
+(112,'Mumbai','Calcutta','2012-08-01','2012-08-10',108),
+(114,'Banglore','Mumbai','2009-11-03','2009-11-15',104),
+(115,'Pune','Delhi','2011-03-26','2011-03-30',106),
+(116,'Chennai','Mysore','2010-06-04','2010-06-15',101),
+(117,'Agra','Mumbai','2008-08-15','2008-08-20',107);
+
+create table expense 
+(
+	e_id integer, 
+	amount Numeric (7,2),
+	tno integer references trip
+);
+insert into expense (e_id,amount,tno)values
+(1,21000,111),
+(2,23000,112),
+(4,10000,114),
+(5,25000,115),
+(6,15000,116),
+(7,70000,117);
+
+select * from salesman;
+select * from trip;
+select * from dept;
+select * from expense;
+
+-------------------------------------------------------------------------------------------------------------------------
+Solve the following Functions
+
+1. Using Business trip database
+1. Write a PL/pgsql function to find a business trip having maximum expenses.
+2. Write a PL/pgsql function to count the total number of business trips from ‘Pune’ to
+‘Mumbai’.
+------------------------------------------------------------------------------------------------------------------------
+Q1) 1. Write a PL/pgsql function to find a business trip having maximum expenses
+
+create or replace function maxexp() returns money as'
+declare m money;
+begin
+
+select max(amount) into m from expense;
+return m;
+end; '
+language 'plpgsql';
+
+select maxexp();
+-------------------------------------------------------------------------------------------------------------------------------------
+Q2. Write a PL/pgsql function to count the total number of business trips from ‘Pune’ to ‘Mumbai’.
+
+create or replace function tripcnt3(fcity char(20),tcity char(20)) returns int as'
+declare c int;
+begin
+	select count(tno) into c 
+	from trip 
+	where from_city=fcity and 
+	to_city=tcity;
+return c;
+end;
+'language 'plpgsql';
+
+select tripcnt3('Pune','Calcutta');
+
+
+select count(tno) as c from trip where from_city='Pune' and to_city='Mumbai';

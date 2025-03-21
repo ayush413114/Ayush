@@ -1,0 +1,62 @@
+Set A:  1.Bank database
+Consider the following database maintained by a Bank. The Bank maintains information about its branches, customers and their loan applications. Following are the tables:
+
+BRANCH (BID INTEGER, BRNAME VARCHAR (30), BRCITY CHAR (10)),
+
+CUSTOMER (CNO INTEGER, CNAME VARCHAR (20), CADDR VARCHAR (35), CITY VARCHAR(20)),
+
+LOAN_APPLICATION (LNO INTEGER, L_AMT_REQUIRED float, L_AMT_APPROVED float, L_DATE DATE)
+
+The relationship is as follows:
+BRANCH, CUSTOMER, LOAN_APPLICATION are related with ternary relationship.
+TERNARY (BID INTEGER, CNO INTEGER, LNO INTEGER). 
+-------------------------------------------------------------------------------------------------------------------------
+select * from branch;
+select * from customer;
+select * from la;
+select * from BCL;
+-------------------------------------------------------------------------------------------------------------------------
+ a) Write a stored function to print the  total number of customers of a particular branch. (Accept branch name as input parameter.) In case the branch name is invalid, raise an exception for the same.
+
+--in this example we use perform key word to get resutl perform and without using perform keyword please note
+create or replace function f1(nm varchar(30))returns integer as'
+declare 
+cnt integer;
+begin
+	select into cnt count(*) From branch where bname=nm;
+		if cnt=0 then
+			raise notice''Invalid Branch Name=%'',nm;
+		
+	else if cnt>0 then
+	PERFORM(select count(*) from branch b,customer c,BCL t where b.bid=t.bid and c.cno=t.cno and b.bname=nm);
+	raise notice ''Total Baranchs Are: %'',cnt;
+	end if;
+end if;
+	return cnt;
+end; '
+language 'plpgsql';
+select f1('Peder Rd');
+
+
+-------------------------------------------------------------------------------------------------------------------------
+b) Write a stored function to increase  the loan approved amount for all loans by 20%. In case the initial loan approved amount was less than Rs 10000, then print  a notice to the user, before updating the amount. 
+
+create or replace function f2()returns integer as'
+declare 
+amt money;
+begin
+	select into amt appmoney from la,bcl where la.lano=bcl.lano;
+	
+		if cast(amt as numeric)<10000 then
+			raise notice ''Amount is less than : 10000 '';
+			--Exit;
+		end if;
+		update la set appmoney=appmoney+(appmoney*0.2);
+return 0;
+end;
+'language 'plpgsql';
+
+select * From la;
+select f2();
+select * From la;
+select f2();

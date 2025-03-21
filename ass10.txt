@@ -1,0 +1,30 @@
+create table Train_Passenger
+select * From passenger;
+select * From ticket;
+select * From train;
+select * From train_passenger;
+-------------------------------------------------------------------------------------------------------------------------
+a)Write a PL/pgsql function to calculate the ticket amount paid by all the passengers on 13/5/2009 for all the trains.
+	create or replace function sun(date)returns float as'
+	declare a float;
+	begin
+		select into a sum(ticket_amt)from ticket where date=date;
+		return a;
+	end;	
+	'language 'plpgsql';
+
+select sun('13 may 2009');
+--------------------------------------------------------------------------------------
+b) Write a PL/pgsql function to update the status of the ticket from “waiting“ to “confirm“ for 
+passenger named “Mr. Jadhav”
+
+create or replace function update_demo(varchar(20))returns char as'
+declare 
+a char;
+begin
+	update ticket set status into a where pid in (select p_id from passenger p_name=a)
+	return a char;
+end;
+'language 'plpgsql';
+
+select update_demo('Mr. Jadhav');

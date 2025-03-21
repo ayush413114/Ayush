@@ -1,0 +1,111 @@
+create database bankdb;
+\c bankdb;
+
+create table branch
+(
+	bid int primary key,
+	bname varchar(30),
+	bcity varchar(30)
+);
+insert into branch(bid,bname,bcity)values(1001,'Aundh','Pune'),
+(1002,'Deccan','Pune'),
+(1003,'Peder Rd','Mumbai'),
+(1004,'Colaba','Mumbai'),
+(1005,'MG Rd','Pune'),
+(1007,'Laxmi Rd','Pune'),
+(1006,'Bibewadi','Pune');
+
+create table customer
+(
+	cno int primary key,
+	cname varchar(30),
+	caddr varchar(30),
+	ccity varchar(20)
+);
+insert into customer values(101,'Akshay','Aundh','Pune');
+insert into customer values(102,'Patil','Sadhashiv Peth','Pune');
+insert into customer values(103,'Joshi','Colaba','Mumbai');
+insert into customer values(104,'Pandey','Colaba','Mumbai');
+insert into customer values(105,'Deshpande','Deccan','Pune');
+insert into customer values(106,'Dave','Karve Nagar','Pune');
+insert into customer values(107,'Sharma','MG Rd','Pune');
+insert into customer values(108,'Gambhir','MG Rd','Pune');
+insert into customer values(109,'Kumar','MG Rd','Pune');
+insert into customer values(110,'Rohan','MG Rd','Pune');
+
+
+create table la
+(
+	lano int primary key,
+	reqmoney money,
+	appmoney money,
+	ladate date
+);
+insert into la values(2001,'1000000','800000','2013-09-09');
+insert into la values(2002,'1500000','1500000','2012-09-09');
+insert into la values(2003,'500000','400000','2013-08-19');
+insert into la values(2004,'200000','200000','2013-09-29');
+insert into la values(2005,'100000','100000','2013-02-28');
+insert into la values(2006,'700000','600000','2013-09-28');
+insert into la values(2007,'600000','600000','2013-09-21');
+insert into la values(2008,'400000','300000','2014-02-21');
+insert into la values(2009,'500000','300000','2014-03-21');
+insert into la values(2010,'1000000','800000','2014-07-11');
+
+create table BCL
+(
+	bid int,
+	cno int,
+	lano int,
+  constraint fk_key foreign key(bid)references branch,
+constraint fk_key1 foreign key(cno)references customer,
+constraint fk_key2 foreign key(lano)references la
+);
+insert into BCL values(1001,101,2001);
+insert into BCL values(1002,102,2002);
+insert into BCL values(1003,103,2003);
+insert into BCL values(1004,104,2004);
+insert into BCL values(1005,107,2005);
+insert into BCL values(1005,108,2006);
+insert into BCL values(1005,109,2007);
+insert into BCL values(1005,110,2008);
+insert into BCL values(1006,105,2009);
+insert into BCL values(1007,106,2010);
+-------------------------------------------------------------------------------------------------------------------------------------
+select * from branch;
+select * from customer;
+select * from la;
+select * from BCL;
+
+1. List the names of the customers who have received loan less than their requirement. 
+
+select cname from customer where cno in(select cno from BCL where lano in(select lano from la where appmoney<reqmoney));
+
+**************************************************************
+2. Find the maximum loan amount approved.
+select max(appmoney) from la;
+*****************************************************************
+3. Find out the total loan amount sanctioned by “Deccan “branch.
+
+select branch.bname
+from branch,bcl,la
+where
+branch.bid=bcl.bid and
+
+branch.bname='Deccan';
+
+**************************************************
+
+4. Count the number of loan applications received by “M.G.ROAD” branch.
+select count(customer.cno)from customer,la,bcl
+where customer.cno=bcl.cno and
+la.lano=bcl.lano and
+customer.caddr='MG Rd';
+
+****************************************
+5. List the names of the customer along with the branch names who have applied for loan in the month of September.
+select customer.cname,branch.bname 
+from customer,branch,la,BCL 
+where customer.cno=BCL.cno AND 
+branch.bid=BCL.bid AND la.lano=BCL.lano 
+AND extract(month from ladate)=09;

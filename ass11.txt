@@ -1,0 +1,105 @@
+Set A
+2. Using Railway Reservation Database 
+
+1. TRAIN (TRAIN_NO INT, TRAIN_NAME VARCHAR(20), DEPART_TIME TIME ,
+ARRIVAL_TIME TIME, SOURCE_STN VARCHAR(20) , DEST_STN VARCHAR (20),
+NO_OF_RES_BOGIES INT , BOGIE_CAPACITY INT)
+
+2. PASSENGER (PASSENGER_ID INT, PASSENGER_NAME VARCHAR(20),
+ADDRESS VARCHAR(30), AGE INT , GENDER CHAR)
+
+Relationship is as follows:
+TRAIN _PASSENGER : M-M with descriptive attributes as follows :
+
+TICKET ( TRAIN_NO INT , PASSENGER_ID INT, TICKET_NO INT COMPOSITE KEY,BOGIE_NO INT, NO_OF_BERTHS INT , DATE DATE , TICKET_AMT DECIMAL(7,2),STATUS CHAR)
+ 
+The status of a particular berth can be ‘W‘ (waiting) or ‘C‘ (confirmed).
+
+PRIMARY KEY(quarter_id, course_id, student_id)
+-------------------------------------------------------------------------------------------------------------------------
+create table TRAIN 
+(
+	TRAIN_NO INT primary key, 
+	TRAIN_NAME VARCHAR(20), 
+	DEPART_TIME TIME ,
+	ARRIVAL_TIME TIME, 
+	SOURCE_STN VARCHAR(20), 
+	DEST_STN VARCHAR (20),
+	NO_OF_RES_BOGIES INT , 
+	BOGIE_CAPACITY INT
+);
+insert into  train(TRAIN_NO,TRAIN_NAME,DEPART_TIME,ARRIVAL_TIME,SOURCE_STN,DEST_STN,NO_OF_RES_BOGIES,
+BOGIE_CAPACITY)values
+(101,'chennai express','11:00:00','21:30:00','abc','xyz',12,45),
+(102,'mumbai express','12:00:00','21:30:00','def','pqr',20,60),
+(103,'pune express','12:00:00','22:30:00','jkl','stu',30,60),
+(104,'express','12:00:00','22:30:00','mno','ghi',40,80);
+
+create table PASSENGER 
+(
+	PASSENGER_ID INT primary key, 
+	PASSENGER_NAME VARCHAR(20),
+	ADDRESS VARCHAR(30), 
+	AGE INT, 
+	GENDER CHAR(6)
+);
+insert into PASSENGER(PASSENGER_ID,PASSENGER_NAME,ADDRESS,AGE,GENDER)values
+(11,'mr jadhav','abc',20,'male'),
+(22,'mr patil','xyz',30,'male'),
+(33,'mrs patil','xyz',40,'female'),
+(44,'mrs jadhav','sty',50,'female');
+
+create table TICKET 
+( 
+	TRAIN_NO INT, 
+	PASSENGER_ID INT, 
+	TICKET_NO INT,
+	primary key(TRAIN_NO,PASSENGER_ID,TICKET_NO),
+	BOGIE_NO INT, 
+	NO_OF_BERTHS INT, 
+	T_DATE DATE , 
+	TICKET_AMT DECIMAL(6,2),
+	STATUS CHAR(1) check(STATUS in('w','c'))
+);
+insert into ticket(TRAIN_NO,PASSENGER_ID,TICKET_NO ,BOGIE_NO,NO_OF_BERTHS,T_DATE,TICKET_AMT,STATUS)values
+(101,11,1,12,5,'2009-05-03',3500.00,'c'),
+(102,22,2,15,3,'2009-04-02',4000.00,'c' ),
+(104,44,5,12,5,'2010-05-03',2550.00,'w'),
+(102,22,6,12,5,'2010-03-03',3350.00,'w'),
+(103,33,4,12,5,'2010-05-03',2000.00,'c'),
+(101,11,3,12,5,'2010-05-03',2500.00,'w');
+
+
+
+select * from passenger;
+select * from ticket;
+select * from train;
+-------------------------------------------------------------------------------------------------------------------------
+a) create a trigger to validate train arrival time must be less than train departure time.
+
+create or replace function t1()returns trigger as'
+begin
+	if new.arrival_time<new.depart_time then
+		raise exception  ''correct time:%'',new;
+	end if;
+		return new;
+end'
+language 'plpgsql';
+
+create trigger t2 before insert or update on train for each row execute procedure t1();                                                                                        
+insert into train values(108,'express','12:00:00','23:30:00','mno','ghi',40,80);
+-------------------------------------------------------------------------------------------------------------------------
+b) Write a trigger which will be activated before changing the status field in the ticket table and print a message to the user.
+
+create or replace function f4() returns trigger as'
+begin
+	if old.status!=new.status then
+		raise exception ''Cannot change status %'',old;
+	end if;
+return old;
+end
+'language 'plpgsql';
+
+create trigger t before insert or update on ticket for each row execute procedure f4();
+
+update ticket set status='c' where train_no=104;

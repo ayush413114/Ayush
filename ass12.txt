@@ -1,0 +1,98 @@
+//using Bus driver databse
+Route-bus:1:M
+bus:Driver:M:M
+...................................................................................................................
+create table ROUTE 
+(
+	ROUTE_NO INT primary key, 
+	SOURCE CHAR(20), 
+	DESTINATION CHAR(20),
+	NO_OF_STATIONS INT
+);
+
+create table BUS 
+(
+	BUS_NO INT primary key, 
+	CAPACITY INT , 
+	DEPOT_NAME VARCHAR(20),
+	ROUTE_NO INT references ROUTE(ROUTE_NO)
+);
+
+create table DRIVER 
+(
+	DRIVER_NO INT primary key, 
+	DRIVER_NAME CHAR(20), 
+	LICENSE_NO INT, 
+	ADDRESS CHAR(20), 
+	D_AGE INT , 
+	SALARY FLOAT
+);
+create table bus_driver
+(
+	BUS_NO INT references BUS(BUS_NO),
+	DRIVER_NO INT references DRIVER(DRIVER_NO),
+	date_of_duty date,
+	shift int check(shift in(1,2))
+);
+
+insert into route values(1,'Hadpsar','Katraj',20);
+insert into route values(2,'Hadpsar','Kothrud',20);
+insert into route values(3,'Hadpsar','Chichwad',20);
+insert into route values(4,'Nigadi','Hadpsar',20);
+insert into route values(5,'Kothrud','Katraj',20);
+
+insert into bus values(101,35,'Hadpsar',1);
+insert into bus values(102,20,'Hadpsar',2);
+insert into bus values(103,32,'Hadpsar',3);
+insert into bus values(104,25,'Nigadi',4);
+insert into bus values(105,5,'Kothrud',5);
+insert into bus values(106,25,'Kothrud',5);
+insert into bus values(107,35,'Hadpsar',3);
+
+insert into driver values(1,'Amol',1001,'Pune',55,15000);
+insert into driver values(2,'Ashok',2001,'Karad',45,12000);
+insert into driver values(3,'Bushan',3001,'Pune',35,10000);
+insert into driver values(4,'Kiran',4001,'Satara',25,8000);
+insert into driver values(5,'Ram',5001,'Pune',32,9000);
+
+
+
+Insert into bus_driver values(101,1,'2014-04-20',1);
+Insert into bus_driver values(102,2,'2014-04-20',2);
+Insert into bus_driver values(103,3,'2015-04-20',1);
+Insert into bus_driver values(104,4,'2016-04-20',2);
+Insert into bus_driver values(105,5,'2017-04-20',1);
+Insert into bus_driver values(106,3,'2015-04-20',2);
+Insert into bus_driver values(107,4,'2016-04-20',1);
+-------------------------------------------------------------------------------------------------------------------------
+Solve the Queries
+a) Define a trigger after insert or update the record of driver if the age is between 18 and 50 give 
+ the message “valid entry” otherwise give appropriate message.
+
+create or replace function agep() returns trigger as '
+begin
+if new.d_age<18 or new.d_age>50 then
+raise exception''Invalid Age % '',new;
+end if; return new;
+end 
+'language 'plpgsql';
+
+create trigger t1 after insert or update on driver for each row execute procedure agep();
+
+insert into driver values(4,'ABC',400,'xyz',25,15000);
+update driver set d_age=20 where dno=1;
+
+------------------------------------------------------------------------------------------------------------------------
+b)Define a trigger after delete the record of bus having capacity < 10. Display the message accordingly
+create or replace function c1()returns trigger as '
+begin
+if old.capacity>10 then
+raise exception ''invalid%'',old;
+end if;
+return old;
+end 
+'language 'plpgsql';
+
+create trigger t22 after delete on bus for each row execute procedure c1();
+
+delete from bus where bno=44;

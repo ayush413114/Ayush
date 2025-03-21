@@ -1,0 +1,103 @@
+Set A
+Project-Employee database
+Consider the database maintained by a company which stores the details of the projects assigned to the employees.
+
+Following are the tables:
+PROJECT (PNO INTEGER, P_NAME CHAR(30),
+PTYPE  CHAR(20),DURATION INTEGER) 
+EMPLOYEE (ENO INTEGER, E_NAME CHAR (20), QUALIFICATION CHAR (15), JOINDATE  DATE)
+
+The relationship is as follows: PROJECT - EMPLOYEE: M-M Relationship , with descriptive attributes as start_date (date), no_of_hours_worked (integer).
+***************************************************
+create table project
+(
+	pno int primary key,
+	pname varchar(20),
+	ptype varchar(20),
+	duration int
+);
+
+
+create table employee
+(
+	eno int primary key,
+	ename varchar(20),
+	qualification varchar(20),
+	joindate date
+);
+
+create table PE
+(
+	pno int,
+	eno int,
+	startdate date,
+	hours int,
+	constraint fk_key foreign key(pno) references project,
+	constraint fk_key1 foreign key(eno) references employee
+);
+
+insert into project values(101,'Electronics','Educational',3);
+insert into project values(102,'System' ,'Educational',3);
+insert into project values(103,'Robotics' ,'Industrial',5);
+insert into project values(104,'Networks','Industrial',4);
+insert into project values(105,'Robotics','Industrial',2);
+insert into project values(106,'System','Industrial',1);
+
+insert into employee values(1000,'Danish','BE.Mech','2011-11-21');
+insert into employee values(1500,'Satish','BE.Mech','2010-01-01');
+insert into employee values(2000,'Amol','BCS','2012-06-01');
+insert into employee values(2500,'Amok','BCS','2013-02-01');
+insert into employee values(3000,'Nitesh','MCS','2012-08-01');
+insert into employee values(3500,'Mohit','MCA','2011-05-01');
+insert into employee values(4000,'Akshay','MCS','2010-09-05');
+insert into employee values(4500,'Kiran','BCA','2014-01-01');
+
+
+insert into pe values(101,1000,'2014-01-21',10);
+insert into pe values(101,1500,'2014-01-21',10);
+insert into pe values(102,2000,'2013-11-11',15);
+insert into pe values(102,3000,'2013-11-11',15);
+insert into pe values(103,2500,'2014-05-11',35);
+insert into pe values(103,3500,'2014-05-11',35);
+
+select * from pe;
+select * from project;
+select * from employee;
+
+Using Project-Employee database
+1. Create a view over the employee table which contains only employee name and his qualification and 
+it should be sorted on qualification.
+	create or replace view v1 as 
+	select ename,qualification 
+	from Employee order by qualification;
+
+
+//create or replace view v1 as 
+	select ename,qualification 
+	from Employee order by ename;
+
+-----------------------------------------------------------------------------------
+2. Create a view containing the project name, project type and start date of the project and should be sorted by start date of the project.
+	create or replace view v2 as 
+	select pname,ptype,startdate 
+	from pe,project,employee 
+	where Project.Pno=pe.Pno and
+	employee.eno=pe.eno	 
+	order by pname;
+-----------------------------------------------------------------------------------
+3. Write the following Queries, on the above created views :    
+a. List different qualifications of employees.    
+	
+	select qualification 
+	from v1 
+	group by qualification;
+
+b. List the name and type of projects started on 1st April 2014.    
+	select Pname,Ptype 
+	from v2 
+	where startdate='2014-05-11';
+
+c. List the names of employees who are qualified as Engineers.
+
+	select * from v1 
+	where qualification='MCA';

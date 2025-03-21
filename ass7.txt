@@ -1,0 +1,97 @@
+Set A: Using railway reservation database
+
+create table PASSENGER 
+(
+	PASSENGER_ID INT primary key, 
+	PASSENGER_NAME VARCHAR(20),
+	ADDRESS VARCHAR(30), 
+	AGE INT, 
+	GENDER CHAR(6)
+);
+insert into PASSENGER(PASSENGER_ID,PASSENGER_NAME,ADDRESS,AGE,GENDER)values
+(11,'mr jadhav','abc',20,'male'),
+(22,'mr patil','xyz',30,'male'),
+(33,'mrs patil','xyz',40,'female'),
+(44,'mrs jadhav','sty',50,'female');
+
+create table TICKET 
+( 
+	TRAIN_NO INT, 
+	PASSENGER_ID INT, 
+	TICKET_NO INT,
+	primary key(TRAIN_NO,PASSENGER_ID,TICKET_NO),
+	BOGIE_NO INT, 
+	NO_OF_BERTHS INT, 
+	T_DATE DATE , 
+	TICKET_AMT DECIMAL(6,2),
+	STATUS CHAR(1) check(STATUS in('w','c'))
+);
+insert into ticket(TRAIN_NO,PASSENGER_ID,TICKET_NO ,BOGIE_NO,NO_OF_BERTHS,T_DATE,TICKET_AMT,STATUS)values
+(101,11,1,12,5,'2009-05-03',3500.00,'c'),
+(102,22,2,15,3,'2009-04-02',4000.00,'c' ),
+(104,44,5,12,5,'2010-05-03',2550.00,'w'),
+(102,22,6,12,5,'2010-03-03',3350.00,'w'),
+(103,33,4,12,5,'2010-05-03',2000.00,'c'),
+(101,11,3,12,5,'2010-05-03',2500.00,'w');
+
+create table TRAIN 
+(
+	TRAIN_NO INT primary key, 
+	TRAIN_NAME VARCHAR(20), 
+	DEPART_TIME TIME ,
+	ARRIVAL_TIME TIME, 
+	SOURCE_STN VARCHAR(20), 
+	DEST_STN VARCHAR (20),
+	NO_OF_RES_BOGIES INT , 
+	BOGIE_CAPACITY INT
+);
+insert into  train(TRAIN_NO,TRAIN_NAME,DEPART_TIME,ARRIVAL_TIME,SOURCE_STN,DEST_STN,NO_OF_RES_BOGIES,BOGIE_CAPACITY)values
+(101,'chennai express','11:00:00','21:30:00','abc','xyz',12,45),
+(102,'mumbai express','12:00:00','21:30:00','def','pqr',20,60),
+(103,'pune express','12:00:00','22:30:00','jkl','stu',30,60),
+(104,'express','12:00:00','22:30:00','mno','ghi',40,80);
+
+select * from passenger;
+select * from ticket;
+select * from train;
+-------------------------------------------------------------------------------------------------------------------------------------
+a) Write a stored function using cursors to find the confirmed bookings of all the trains on 
+18-05-2009.
+
+create or replace function fu1()returns void as'
+declare 
+cf1 cursor for select passenger_name from passenger where passenger_id in(select passenger_id from ticket where t_date=''2009-05-18'' or status=''c'');
+pa record;
+
+begin
+	open cf1;
+		loop
+			fetch cf1 into pa;
+			exit when not found;
+			raise notice ''Passenger Name: %'',pa.passenger_name;
+		end loop;
+	close cf1;
+end '
+language 'plpgsql';
+
+select fu1();
+
+select passenger_name from passenger where passenger_id in(select passenger_id from ticket where t_date='2009-05-18' or status='c');
+-------------------------------------------------------------------------------------------------------------------------
+b) Write a stored function using cursors to find the total number of berths not reserved for all the trains on 18-05-2009.
+
+create or replace function fu4()returns void as '
+declare cf2 cursor for select count(passenger_name) from passenger where passenger_id in(select passenger_id from ticket where t_date=''2010-05-03'' and status=''w'');
+cnt int;
+begin
+	open cf2;
+		loop
+			fetch cf2 into cnt;
+			exit when not found;
+			raise notice ''Total: %'',cnt;
+		end loop;
+	close cf2;
+end '
+language 'plpgsql';
+
+select fu4();
